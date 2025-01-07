@@ -4,6 +4,8 @@ import Layout from "./pages/Layout";
 import Home from "./pages/Home";
 import NoPage from "./pages/NoPage";
 import { StrictMode } from "react";
+import './App.scss'
+import './style.scss'
 
 export default function App() {
   return (
