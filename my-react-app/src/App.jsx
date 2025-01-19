@@ -3,18 +3,20 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./pages/Layout";
 import Home from "./pages/Home";
 import NoPage from "./pages/NoPage";
-import { StrictMode } from "react";
-import './App.scss'
-import './style.scss'
+import React, { StrictMode, useEffect } from 'react';
+import './index.css';
 
 export default function App() {
+
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Layout />} />
-        <Route path="home" element={<Home />} />
-        <Route path="*" element={<NoPage />} />
-      </Routes>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="home" element={<Home />} />
+          <Route path="*" element={<NoPage />} />
+        </Routes>
+      </Layout>
     </BrowserRouter>
   );
 }
