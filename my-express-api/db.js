@@ -23,7 +23,7 @@ const query = async (queryText, params = []) => {
 
     // Run the query using the client from the pool
     const result = await client.query(queryText, params);
-    console.log('Query result:', result.rows);
+    // console.log('Query result:', result.rows);
 
     return result.rows;  // Return the result
 

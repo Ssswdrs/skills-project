@@ -1,15 +1,15 @@
 import db from '../db.js'
 
 const test = (data='') => {
-    return {text:'hello 4eve', dataReceive: data}
+    return {text:'hello world', dataReceive: data}
 }
 
 const test2 = (data) => {
-    return {text:'hello 4eve', dataReceive: data.data}
+    return {text:'hello world', dataReceive: data.data}
 }
 
 const test3 = (data) => {
-    return {text:'hello 4eve', dataReceive: data}
+    return {text:'hello world', dataReceive: data}
 }
 
 const test4 = async () => {
