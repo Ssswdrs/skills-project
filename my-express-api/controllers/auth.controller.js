@@ -6,7 +6,6 @@ import services from '../services/auth.js';
  */
 export const auth = async (req, res) => {
     try {
-        console.log("====>", req)
         const token = await services.auth(req.body);
         res.status(200).json(token);
     } catch (error) {

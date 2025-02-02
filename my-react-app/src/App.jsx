@@ -6,15 +6,16 @@ import Layout from "./pages/Layout";
 import Home from "./pages/Home";
 import NoPage from "./pages/NoPage";
 import Footer from "./pages/Footer";
-import "./app.css";
-import axios from 'axios';
-import { check } from './api/test.js';
+import "./App.css";
+import { check } from './api/check.js';
+import Register from "./pages/Register.jsx";
 
 export default function App() {
+  
   const isAuthenticated = async () => {
     // Replace with actual authentication logic (e.g., token or session validation)
     try {
-      const token = await check()
+      await check()
 
       return true;
     } catch (error) {
@@ -33,6 +34,7 @@ export default function App() {
       <Routes>
         {/* Public route */}
         <Route path="login" element={<Login />} />
+        <Route path="register" element={<Register />} />
 
         {/* Protected routes */}
         <Route element={<PrivateRoute element={<LayoutWrapper />} />}>
@@ -67,4 +69,7 @@ if (rootElement) {
       <App />
     </StrictMode>
   );
+}
+if (import.meta.env.VITE_MODE === 'production') {
+  console.log = function () {}; // Disable console.log in production
 }
