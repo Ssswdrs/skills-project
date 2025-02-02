@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Create an Axios instance
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:8080", // Base URL for all requests
+  baseURL: import.meta.env.VITE_API_URL, // Base URL for all requests
   timeout: 5000, // Request timeout in milliseconds
 });
 
@@ -25,7 +25,7 @@ const onRrefreshed = (newToken) => {
 axiosInstance.interceptors.request.use(
   (config) => {
     // Attach token to the Authorization header
-    const token = localStorage.getItem("access_token");
+    const token = sessionStorage.getItem("access_token");
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }
@@ -54,10 +54,10 @@ axiosInstance.interceptors.response.use(
 
         try {
           // POST request to refresh the access token
-          const username = localStorage.getItem("username");
-          const refreshToken = localStorage.getItem("refresh_token");
-          const token = localStorage.getItem("access_token");
-          const response = await axios.post("http://localhost:8080/auth/refresh", {
+          const username = sessionStorage.getItem("username");
+          const refreshToken = sessionStorage.getItem("refresh_token");
+          const token = sessionStorage.getItem("access_token");
+          const response = await axios.post(import.meta.env.VITE_API_URL + "/auth/refresh", {
             username,
             refreshToken,
           }, {
@@ -67,9 +67,9 @@ axiosInstance.interceptors.response.use(
           });
 
           const newToken = response.data;
-          localStorage.setItem("access_token", newToken.access_token);
-          localStorage.setItem("refresh_token", newToken.refresh_token);
-          localStorage.setItem("username", newToken.username);
+          sessionStorage.setItem("access_token", newToken.access_token);
+          sessionStorage.setItem("refresh_token", newToken.refresh_token);
+          sessionStorage.setItem("username", newToken.username);
           // Notify all subscribers that the token is refreshed
           onRrefreshed(newToken.access_token);
 

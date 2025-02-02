@@ -11,9 +11,9 @@ function Layout() {
   const handleLogout = () => {
     // Clear tokens from localStorage and reset state
     window.location.href = "/login";
-    localStorage.removeItem('username');
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+    sessionStorage.removeItem('username');
+    sessionStorage.removeItem('access_token');
+    sessionStorage.removeItem('refresh_token');
     setAccessToken('');
     setRefreshToken('');
   };

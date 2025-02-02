@@ -1,54 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../api/auth.js';
+import { register } from '../api/auth.js';
 
-const Login = () => {
+const Register = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
-  const [accessToken, setAccessToken] = useState('');
-  const [refreshToken, setRefreshToken] = useState('');
 
   const navigate = useNavigate();
 
   // Check for tokens in localStorage when component mounts
   useEffect(() => {
-    const storedAccessToken = sessionStorage.getItem('access_token');
-    const storedRefreshToken = sessionStorage.getItem('refresh_token');
 
-    if (storedAccessToken && storedRefreshToken) {
-      setAccessToken(storedAccessToken);
-      setRefreshToken(storedRefreshToken);
-    }
   }, []);
 
-  const handleLogin = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
 
-    if (!username || !password) {
+    if (!username || !password || password != confirmPassword) {
       setError('Both username and password are required.');
       return;
     }
 
     try {
-      const response = await login({ username, password })
+      const response = await register({ username, password })
 
       if (response) {
-        const data = await response;
-
-        // Store tokens in localStorage
-        sessionStorage.setItem('username', data.username);
-        sessionStorage.setItem('access_token', data.access_token);
-        sessionStorage.setItem('refresh_token', data.refresh_token);
-        navigate('/home');
-        // Update state with tokens
-        setAccessToken(data.access_token);
-        setRefreshToken(data.refresh_token);
-
-        // Clear error message
+        navigate('/login');
         setError('');
       } else {
-        const errorData = await response;
+        const errorData = await response.json();
         setError(errorData.message);
       }
     } catch (error) {
@@ -59,13 +41,13 @@ const Login = () => {
 
   return (
     <div className="max-w-sm mx-auto mt-14 p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-3xl font-bold text-center mb-6">Login</h2>
+      <h2 className="text-3xl font-bold text-center mb-6">Register</h2>
 
       {/* Error Message */}
       {error && <div className="mb-4 text-red-600 text-center">{error}</div>}
 
       {/* Login Form */}
-      <form onSubmit={handleLogin} className="space-y-6">
+      <form onSubmit={handleRegister} className="space-y-6">
         <div className="input-group">
           <label htmlFor="username" className="block text-gray-700 font-medium">Username</label>
           <input
@@ -92,19 +74,30 @@ const Login = () => {
           />
         </div>
 
+        <div className="input-group">
+          <label htmlFor="confirmPassword" className="block text-gray-700 font-medium">Confirm Password</label>
+          <input
+            type="password"
+            id="confirmPassword"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="Enter your password"
+            required
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
         <button
           type="submit"
           className="w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-200"
         >
-          Login
+          Register
         </button>
       </form>
-      <div>
-        <p>No account? <span><a className=' text-cyan-400 hover:text-cyan-500' href='/register'>Click here to register</a></span></p>
-      </div>
+
     </div>
 
   );
 };
 
-export default Login;
+export default Register;
