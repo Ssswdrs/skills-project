@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import db from '../db.js'
 import argon2 from "argon2";
 import 'dotenv/config';
-
+import redisClient from '../redis.js';
 const auth = async (userData) => {
     try {
         const username = userData.username;
@@ -23,7 +23,8 @@ const auth = async (userData) => {
 
             // Update the refresh token in the database
             await db.query('update users set refresh = $1 where username = $2', [refresh_token, user[0].username]);
-
+            let loginCount = await redisClient.getKey("loginCount")
+            await redisClient.setKey("loginCount",typeof loginCount != 'string' ? 0 : (parseInt(loginCount) + 1))
             return {
                 username,
                 access_token,
@@ -76,39 +77,93 @@ const jwtRefreshTokenGenerate = (user) => {
 
 const refreshToken = async (data) => {
     try {
-        const userData = data;
-        const username = data.username
+        const username = data.username;
+        const providedRefreshToken = data.refreshToken;
 
-        // Query to fetch user data based on username and ID
-        const user = await db.query('SELECT * FROM users where username = $1 limit 1', [userData.username]);
-
-        // Query to fetch token based on the refresh token and username
-        const userToken = await db.query('SELECT * FROM users where refresh = $1 and username = $2 limit 1', [userData.refreshToken, userData.username]);
-
-        // Validate user and token existence
-        if (user?.length < 1 || userToken?.length < 1) {
-            throw new Error('Token is invalid');
+        if (!username || !providedRefreshToken) {
+            throw new Error('Invalid request data');
         }
 
-        // Generate new tokens
-        const access_token = jwtGenerate(user[0]);
-        const refresh_token = jwtRefreshTokenGenerate(user[0]);
-        // Update the refresh token in the database
-        await db.query(`update users set refresh = $1 where id = $2`, [refresh_token, userToken[0].id]);
+        // ตรวจสอบ Refresh Token จาก Redis ก่อน
+        const cachedRefreshToken = await redisClient.getKey(`refreshToken:${username}`);
+        if (cachedRefreshToken && cachedRefreshToken === providedRefreshToken) {
+            // Refresh Token ตรงกับข้อมูลใน Redis
+            // ดึงข้อมูลผู้ใช้งานจาก Redis หากมี
+            let user = await redisClient.getKey(`user:${username}`);
+            if (user) {
+                user = JSON.parse(user);
+            } else {
+                // หากไม่มีข้อมูลผู้ใช้งานใน Redis ดึงข้อมูลจากฐานข้อมูล
+                const dbUser = await db.query('SELECT * FROM users WHERE username = $1 LIMIT 1', [username]);
+                if (dbUser?.length < 1) {
+                    throw new Error('User not found');
+                }
+                user = dbUser[0];
+                // แคชข้อมูลผู้ใช้งานใน Redis
+                await redisClient.setKey(`user:${username}`, JSON.stringify(user), { EX: 3600 }); // 1 ชั่วโมง
+            }
+
+            // สร้าง Access Token และ Refresh Token ใหม่
+            const access_token = jwtGenerate(user);
+            const new_refresh_token = jwtRefreshTokenGenerate(user);
+
+            // อัปเดต Refresh Token ในฐานข้อมูล
+            await db.query('UPDATE users SET refresh = $1 WHERE id = $2', [new_refresh_token, user.id]);
+
+            // อัปเดต Refresh Token ใน Redis
+            await redisClient.setKey(`refreshToken:${username}`, new_refresh_token, { EX: 86400 }); // 1 วัน
+
+            return {
+                username,
+                access_token,
+                refresh_token: new_refresh_token,
+            };
+        }
+
+        // หาก Refresh Token ไม่พบใน Redis ดำเนินการตรวจสอบจากฐานข้อมูล
+        const userToken = await db.query(
+            'SELECT * FROM users WHERE refresh = $1 AND username = $2 LIMIT 1',
+            [providedRefreshToken, username]
+        );
+
+        if (userToken?.length < 1) {
+            throw new Error('Invalid refresh token');
+        }
+
+        // ดึงข้อมูลผู้ใช้งานจากฐานข้อมูล
+        let user = await redisClient.getKey(`user:${username}`);
+        if (!user) {
+            const dbUser = await db.query('SELECT * FROM users WHERE username = $1 LIMIT 1', [username]);
+            if (dbUser?.length < 1) {
+                throw new Error('User not found');
+            }
+            user = dbUser[0];
+            // แคชข้อมูลผู้ใช้งานใน Redis
+            await redisClient.setKey(`user:${username}`, JSON.stringify(user), { EX: 3600 }); // 1 ชั่วโมง
+        } else {
+            user = JSON.parse(user);
+        }
+
+        // สร้าง Access Token และ Refresh Token ใหม่
+        const access_token = jwtGenerate(user);
+        const new_refresh_token = jwtRefreshTokenGenerate(user);
+
+        // อัปเดต Refresh Token ในฐานข้อมูล
+        await db.query('UPDATE users SET refresh = $1 WHERE id = $2', [new_refresh_token, user.id]);
+
+        // อัปเดต Refresh Token ใน Redis
+        await redisClient.setKey(`refreshToken:${username}`, new_refresh_token, { EX: 86400 }); // 1 วัน
 
         return {
             username,
             access_token,
-            refresh_token,
+            refresh_token: new_refresh_token,
         };
     } catch (error) {
-        // Catch and handle any errors
         console.error('Error refreshing token:', error);
         throw new Error('Unable to refresh token');
     }
 };
-
-
 
 
 export default { auth, refreshToken }

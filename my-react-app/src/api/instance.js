@@ -1,5 +1,5 @@
 import axios from "axios";
-
+import { toast } from 'react-toastify';
 // Create an Axios instance
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL, // Base URL for all requests
@@ -79,7 +79,10 @@ axiosInstance.interceptors.response.use(
         } catch (refreshError) {
           console.error("Error refreshing token:", refreshError);
           // Optionally handle redirect to login if refresh fails
-          window.location.href = "/login";
+          toast.error('Refresh token fail!', {toastId: "refresh token fail"});
+          setTimeout(() => {
+            window.location.href = "/login"; 
+          }, 2000); 
           return Promise.reject(refreshError);
         } finally {
           isRefreshing = false;
@@ -94,7 +97,10 @@ axiosInstance.interceptors.response.use(
         });
       }
     }else{
-        window.location.href = "/login";
+        toast.error('Wrong Username or Password!', {toastId: "login fail"});
+        setTimeout(() => {
+          window.location.href = "/login"; 
+        }, 2000); 
     }
 
     return Promise.reject(error);

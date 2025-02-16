@@ -5,7 +5,7 @@ import app from './app.js';  // Import your app configuration
 import 'dotenv/config';
 
 const numCPUs = os.cpus().length;
-const numWorkers = Math.min(numCPUs - 1, 4);
+const numWorkers = Math.min(numCPUs - 1, 2);
 const port = process.env.PORT || 8000;   // Default port 8000 if not provided
 const host = process.env.HOST || 'localhost'; // Default host to localhost if not provided
 

@@ -61,4 +61,13 @@ export const test4 = async (req, res) => {
   }
 };
 
+export const test5 = async (req, res) => {
+  try {
+    const response = await services.test5(req.body);
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+};
 
