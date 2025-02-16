@@ -9,7 +9,7 @@ import Footer from "./pages/Footer";
 import "./App.css";
 import { check } from './api/check.js';
 import Register from "./pages/Register.jsx";
-
+import { ToastContainer, Zoom } from 'react-toastify';
 export default function App() {
   
   const isAuthenticated = async () => {
@@ -31,6 +31,19 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        transition={Zoom}
+      />
       <Routes>
         {/* Public route */}
         <Route path="login" element={<Login />} />

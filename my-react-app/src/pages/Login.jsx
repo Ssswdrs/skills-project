@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login } from '../api/auth.js';
-
+import { toast } from 'react-toastify';
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -48,12 +48,14 @@ const Login = () => {
         // Clear error message
         setError('');
       } else {
+        toast.error('Wrong Username or Password!', {toastId: "login fail"});
         const errorData = await response;
         setError(errorData.message);
       }
     } catch (error) {
+      toast.error('Wrong Username or Password!', {toastId: "login fail"});
       console.error('Error during login:', error);
-      setError('An error occurred while logging in.');
+      setError('Wrong Username or Password.');
     }
   };
 
