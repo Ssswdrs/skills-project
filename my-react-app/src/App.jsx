@@ -8,8 +8,9 @@ import NoPage from "./pages/NoPage";
 import Footer from "./pages/Footer";
 import "./App.css";
 import { check } from './api/check.js';
-import Register from "./pages/Register.jsx";
+import Register from "./pages/Register";
 import { ToastContainer, Zoom } from 'react-toastify';
+import Message from "./pages/Message";
 export default function App() {
   
   const isAuthenticated = async () => {
@@ -53,6 +54,7 @@ export default function App() {
         <Route element={<PrivateRoute element={<LayoutWrapper />} />}>
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="home" element={<Home />} />
+          <Route path="message" element={<Message />} />
         </Route>
 
         {/* Fallback route */}

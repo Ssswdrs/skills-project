@@ -34,3 +34,25 @@ export const jwtRefreshTokenValidate = (req, res, next) => {
         return res.sendStatus(403)
     }
 }
+
+export const jwtValidateSocket = (socket, next) => {
+    try {
+        const token = socket.handshake.auth?.token;
+        if (!token) {
+            return next(new Error('No token provided')); // Return early with a meaningful error message
+        }
+
+        // Verify the token
+        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+            if (err) {
+                return next(new Error('Invalid token')); // Return error if token is invalid
+            }
+
+            socket.user = decoded; // Store user data on the socket object
+            next(); // Proceed with the connection
+        });
+    } catch (error) {
+        console.error('WebSocket Authentication Error:', error.message);
+        next(new Error('Authentication error')); // Handle any other errors
+    }
+};

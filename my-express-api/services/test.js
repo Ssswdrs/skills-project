@@ -1,17 +1,18 @@
 import db from '../db.js'
 import { Readable } from 'stream';
 import { createWriteStream } from 'fs';
+import { sendMessage } from '../producer.js';
 
-const test = (data='') => {
-    return {text:'hello world', dataReceive: data}
+const test = (data = '') => {
+    return { text: 'hello world', dataReceive: data }
 }
 
 const test2 = async (data) => {
-    return {text:'hello world', dataReceive: data.data}
+    return { text: 'hello world', dataReceive: data.data }
 }
 
 const test3 = (data) => {
-    return {text:'hello world', dataReceive: data}
+    return { text: 'hello world', dataReceive: data }
 }
 
 const test4 = async () => {
@@ -57,4 +58,16 @@ const test5 = async (data) => {
     }
 };
 
-export default {test,test2,test3,test4,test5}
+const test6 = async (data) => {
+    try {
+        const { message } = data;
+        if (!message) throw new Error('Message is required');
+        
+        await sendMessage(message);
+        return { success: true, message: 'Message sent to RabbitMQ', data: message };
+    } catch (error) {
+        console.error('Error sending message:', error);
+    }
+}
+
+export default { test, test2, test3, test4, test5, test6 }

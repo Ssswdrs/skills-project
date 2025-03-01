@@ -16,6 +16,7 @@ router.post('/', jwtValidate, service.test2);
 router.get('/db', jwtValidate, service.test4);
 router.get('/:id', jwtValidate, service.test3);
 router.post('/fs', jwtValidate, service.test5);
+router.post('/send', jwtValidate, service.test6);
 
 
 
